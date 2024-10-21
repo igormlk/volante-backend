@@ -14,7 +14,7 @@ export const ServiceOrder = db.define("ServiceOrder", {
         allowNull: false
     },
     customerId:{
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references:{
             model: Customer,
@@ -22,7 +22,7 @@ export const ServiceOrder = db.define("ServiceOrder", {
         }
     },
     vehicleId:{
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references:{
             model: Vehicle,
@@ -30,7 +30,7 @@ export const ServiceOrder = db.define("ServiceOrder", {
         }
     },
     insuranceCompanyId:{
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: true,
         references: {
             model: InsuranceCompany,

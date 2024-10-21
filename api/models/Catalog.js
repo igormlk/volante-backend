@@ -12,7 +12,7 @@ export const Catalog = db.define('catalog', {
         unique: true
     },
     value:{
-        type: DataTypes.NUMBER,
+        type: DataTypes.DECIMAL(10,2),
         allowNull: false
     },
     type:{

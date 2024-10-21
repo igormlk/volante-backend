@@ -4,8 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "bun index.js",
-    "build": "node build.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "Thailon Lucas",
@@ -13,10 +12,11 @@
   "description": "API for the Volante app",
   "dependencies": {
     "@fastify/cors": "^9.0.1",
+    "dotenv": "^16.4.5",
     "fastify": "^4.28.1",
+    "pg": "^8.13.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.3",
-    "sqlite3": "^5.1.7"
+    "sequelize": "^6.37.3"
   },
   "type": "module",
   "devDependencies": {

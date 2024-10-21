@@ -17,7 +17,7 @@ export const ServiceOrderItem = db.define('service_order_items', {
         allowNull: false,
     },
     quantity:{
-        type: DataTypes.NUMBER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 1
     },

@@ -18,8 +18,9 @@ const api = Fastify({logger: false})
 
 const startServer = async () => {
     try {
-        await api.listen({port: 3000});
-        console.log('Server running at port 3000');
+        const port = process.env.PORT || 8080
+        await api.listen({port: port, host: "0.0.0.0"});
+        console.log('Server running at port ' + port);
     } catch (err) {
         api.log.error(err);
         process.exit(1);

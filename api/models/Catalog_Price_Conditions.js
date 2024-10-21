@@ -30,7 +30,7 @@ export const CatalogPriceCondition = db.define('CatalogPriceConditions', {
         primaryKey: true
     },
     value:{
-        type: DataTypes.NUMBER,
+        type: DataTypes.DECIMAL,
         allowNull: false
     }
 },{

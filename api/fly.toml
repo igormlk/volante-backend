@@ -1,20 +1,22 @@
-# fly.toml app configuration file generated for api-volante on 2024-10-16T16:36:35-03:00
+# fly.toml app configuration file generated for api-volante-snowy-log-3383 on 2024-10-20T23:49:32-04:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'api-volante'
+app = 'api-volante-snowy-log-3383'
 primary_region = 'iad'
 
 [build]
+
+[env]
+  PORT = '8080'
 
 [[mounts]]
   source = 'data'
   destination = '/data'
 
 [http_service]
-  internal_port = 3000
-  force_https = true
+  internal_port = 8080
   auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0

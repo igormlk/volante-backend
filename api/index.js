@@ -1,15 +1,15 @@
 import Fastify from 'fastify'
 import db from "./config/database.js";
-import { Customer } from "./models/Customer.js";
-import { Vehicle } from "./models/Vehicle.js";
-import { Employee } from "./models/Employee.js";
-import { InsuranceCompany } from "./models/InsuranceCompany.js";
-import { Catalog } from './models/Catalog.js';
-import { ServiceOrderItem } from './models/ServiceOrderItem.js';
-import { ServiceOrder } from "./models/ServiceOrder.js";
-import { Op, ValidationError } from 'sequelize';
+import {Customer} from "./models/Customer.js";
+import {Vehicle} from "./models/Vehicle.js";
+import {Employee} from "./models/Employee.js";
+import {InsuranceCompany} from "./models/InsuranceCompany.js";
+import {Catalog} from './models/Catalog.js';
+import {ServiceOrderItem} from './models/ServiceOrderItem.js';
+import {ServiceOrder} from "./models/ServiceOrder.js";
+import {Op, ValidationError} from 'sequelize';
 import cors from '@fastify/cors'
-import { Supplier } from './models/Supplier.js';
+import {Supplier} from './models/Supplier.js';
 
 const INITIAL_PAGE = 1;
 const PAGE_LIMIT = 50;
@@ -28,18 +28,10 @@ const startServer = async () => {
 };
 
 api.register(cors, {
-    origin: (origin, cb) => {
-        cb(null, true)
-        // if(!origin) return cb(null, true)
-            
-        // const hostname = new URL(origin).hostname
-        // if(!origin || hostname === 'localhost'){
-        //     cb(null, true)
-        // }else{
-        //     cb(new Error("Not allowed"), false)
-        // }
-    }
-})
+    origin: "https://volante-frontend.fly.dev",  // Permitir todas as origens. Pode ser modificado para um domínio específico.
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Métodos HTTP permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // Cabeçalhos permitidos
+});
 
 db.authenticate()
     .then(() => {
@@ -51,9 +43,9 @@ db.authenticate()
         startServer()
     })
     .catch(error => {
-        console.error('Error connecting to DB:', error);
-    }
-);
+            console.error('Error connecting to DB:', error);
+        }
+    );
 
 api.get("/", async (resquest, reply) => {
     reply.status(200).send("API Volante running succesfully!")
@@ -61,88 +53,88 @@ api.get("/", async (resquest, reply) => {
 
 const getPaginationOffset = (page, limit) => page <= 1 ? 0 : ((page - 1) * limit)
 
-const createBasicCRUD = (name, route, table, methods = ['get_all','get_by_id', 'post', 'put', 'delete']) => {
+const createBasicCRUD = (name, route, table, methods = ['get_all', 'get_by_id', 'post', 'put', 'delete']) => {
     // Criar
-    if(methods.includes('post')){
+    if (methods.includes('post')) {
         api.post(`/${route}`, async (request, reply) => {
             try {
-            const result = await table.create(request.body);
-            reply.status(201).send(result);
+                const result = await table.create(request.body);
+                reply.status(201).send(result);
             } catch (error) {
-                if(error instanceof ValidationError){
+                if (error instanceof ValidationError) {
                     reply.status(400).send({error})
                 }
-            reply.status(400).send({ error: error.message });
+                reply.status(400).send({error: error.message});
             }
         });
     }
-    
+
     // Listar
-    
-    if(methods.includes('get_all')){
+
+    if (methods.includes('get_all')) {
         api.get(`/${route}`, async (request, reply) => {
             try {
-            const result = await table.findAll();
-            reply.status(200).send(result);
+                const result = await table.findAll();
+                reply.status(200).send(result);
             } catch (error) {
-            reply.status(500).send({ error: error.message });
+                reply.status(500).send({error: error.message});
             }
         });
     }
-    
+
     // Obter por ID
-    if(methods.includes('get_by_id')){
+    if (methods.includes('get_by_id')) {
         api.get(`/${route}/:id`, async (request, reply) => {
             try {
-            const result = await table.findByPk(request.params.id);
-            if (result) {
-                reply.status(200).send(result);
-            } else {
-                reply.status(404).send({ error: `${name} not found` });
-            }
+                const result = await table.findByPk(request.params.id);
+                if (result) {
+                    reply.status(200).send(result);
+                } else {
+                    reply.status(404).send({error: `${name} not found`});
+                }
             } catch (error) {
-            reply.status(500).send({ error: error.message });
+                reply.status(500).send({error: error.message});
             }
         });
     }
-    
+
     // Atualizar
-    if(methods.includes('put')){
+    if (methods.includes('put')) {
         api.put(`/${route}/:id`, async (request, reply) => {
             try {
-            const [updated] = await table.update(request.body, {
-                where: { id: request.params.id }
-            });
-            if (updated) {
-                const result = await table.findByPk(request.params.id);
-                reply.status(200).send(result);
-            } else {
-                reply.status(404).send({ error: `${name} not found` });
-            }
+                const [updated] = await table.update(request.body, {
+                    where: {id: request.params.id}
+                });
+                if (updated) {
+                    const result = await table.findByPk(request.params.id);
+                    reply.status(200).send(result);
+                } else {
+                    reply.status(404).send({error: `${name} not found`});
+                }
             } catch (error) {
-                if(error instanceof ValidationError){
+                if (error instanceof ValidationError) {
                     const message = error.errors[0].message
                     reply.status(400).send({error: message})
                 }
-            reply.status(500).send({ error: error.message });
+                reply.status(500).send({error: error.message});
             }
         });
     }
-    
+
     // Excluir
-    if(methods.includes('delete')){
+    if (methods.includes('delete')) {
         api.delete(`/${route}/:id`, async (request, reply) => {
             try {
-            const deleted = await table.destroy({
-                where: { id: request.params.id }
-            });
-            if (deleted) {
-                reply.status(204).send();
-            } else {
-                reply.status(404).send({ error: `${name} not found` });
-            }
+                const deleted = await table.destroy({
+                    where: {id: request.params.id}
+                });
+                if (deleted) {
+                    reply.status(204).send();
+                } else {
+                    reply.status(404).send({error: `${name} not found`});
+                }
             } catch (error) {
-                reply.status(500).send({ error: error.message });
+                reply.status(500).send({error: error.message});
             }
         });
     }
@@ -150,18 +142,18 @@ const createBasicCRUD = (name, route, table, methods = ['get_all','get_by_id', '
 
 createBasicCRUD('Catalog Price Condition', 'catalog_price_conditions', Catalog)
 createBasicCRUD('Customer', 'customers', Customer)
-api.get('/customers/search', async ({ query: { page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = '' } }, reply) => {
+api.get('/customers/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Customer.findAndCountAll({
             where: {
                 [Op.or]: [
-                    { name: { [Op.like]: `%${searchValue}%` } },
-                    { cpf: { [Op.like]: `%${searchValue}%` } },
-                    { phone: { [Op.like]: `%${searchValue}%` } },
-                    { email: { [Op.like]: `%${searchValue}%` } },
+                    {name: {[Op.like]: `%${searchValue}%`}},
+                    {cpf: {[Op.like]: `%${searchValue}%`}},
+                    {phone: {[Op.like]: `%${searchValue}%`}},
+                    {email: {[Op.like]: `%${searchValue}%`}},
                 ]
             },
-            limit: parseInt(limit, 10) || PAGE_LIMIT, 
+            limit: parseInt(limit, 10) || PAGE_LIMIT,
             order: [['updatedAt', 'DESC'], ['name', 'ASC']],
             offset: getPaginationOffset(page, limit),
         });
@@ -171,24 +163,24 @@ api.get('/customers/search', async ({ query: { page = INITIAL_PAGE, limit = PAGE
             meta: {
                 page: Number(page),
                 totalItems: count,
-                totalPages: Math.ceil(count/limit)
+                totalPages: Math.ceil(count / limit)
             }
         }
 
         reply.status(200).send(response);
     } catch (error) {
-        reply.status(500).send({ error: error.message });
+        reply.status(500).send({error: error.message});
     }
 });
 
 createBasicCRUD('Employee', 'employees', Employee)
 api.get('/employees/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
-    try{
+    try {
         const {count, rows} = await Employee.findAndCountAll({
             limit,
             offset: getPaginationOffset(page, limit),
             order: [['name', 'ASC'], ['createdAt', 'DESC']],
-            where:{
+            where: {
                 [Op.or]: {
                     name: {[Op.like]: `%${searchValue}%`},
                     cpf: {[Op.like]: `%${searchValue}%`}
@@ -200,23 +192,23 @@ api.get('/employees/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_L
             meta: {
                 page: Number(page),
                 totalItems: count,
-                totalPages: Math.ceil(count/limit)
+                totalPages: Math.ceil(count / limit)
             }
         }
         reply.status(200).send(response);
-    }catch(error){
+    } catch (error) {
         reply.status(500).send({error: error.message})
     }
 })
 
 createBasicCRUD('Supplier', 'suppliers', Supplier)
 api.get('/suppliers/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
-    try{
+    try {
         const {count, rows} = await Supplier.findAndCountAll({
             limit,
             offset: getPaginationOffset(page, limit),
             order: [['name', 'ASC'], ['createdAt', 'DESC']],
-            where:{
+            where: {
                 [Op.or]: {
                     name: {[Op.like]: `%${searchValue}%`},
                     cnpj: {[Op.like]: `%${searchValue}%`}
@@ -228,11 +220,11 @@ api.get('/suppliers/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_L
             meta: {
                 page: Number(page),
                 totalItems: count,
-                totalPages: Math.ceil(count/limit)
+                totalPages: Math.ceil(count / limit)
             }
         }
         reply.status(200).send(response);
-    }catch(error){
+    } catch (error) {
         reply.status(500).send({error: error.message})
     }
 })
@@ -240,9 +232,16 @@ api.get('/suppliers/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_L
 createBasicCRUD('Insurance Company', 'insurance_companies', InsuranceCompany)
 createBasicCRUD('Service Order', 'service_orders', ServiceOrder, ['put', 'delete', 'get_all'])
 
-api.get('/service_orders/search', async ({ query: { page = INITIAL_PAGE, limit = PAGE_LIMIT, vehicle = '', customer = '' } }, reply) => {
+api.get('/service_orders/search', async ({
+                                             query: {
+                                                 page = INITIAL_PAGE,
+                                                 limit = PAGE_LIMIT,
+                                                 vehicle = '',
+                                                 customer = ''
+                                             }
+                                         }, reply) => {
     try {
-        const { count, rows } = await ServiceOrder.findAndCountAll({
+        const {count, rows} = await ServiceOrder.findAndCountAll({
             limit,
             offset: getPaginationOffset(page, limit),
             order: [['updatedAt', 'DESC']],
@@ -252,10 +251,10 @@ api.get('/service_orders/search', async ({ query: { page = INITIAL_PAGE, limit =
                     attributes: ['id', 'name', 'cpf', 'phone', 'email', 'address'],
                     where: customer ? {
                         [Op.or]: [
-                            { name: { [Op.like]: `%${customer}%` } },
-                            { cpf: { [Op.like]: `%${customer}%` } },
-                            { phone: { [Op.like]: `%${customer}%` } },
-                            { email: { [Op.like]: `%${customer}%` } },
+                            {name: {[Op.like]: `%${customer}%`}},
+                            {cpf: {[Op.like]: `%${customer}%`}},
+                            {phone: {[Op.like]: `%${customer}%`}},
+                            {email: {[Op.like]: `%${customer}%`}},
                         ]
                     } : null,
                     required: Boolean(customer)
@@ -265,9 +264,9 @@ api.get('/service_orders/search', async ({ query: { page = INITIAL_PAGE, limit =
                     attributes: ['id', 'plate', 'chassi', 'brand', 'model', 'year', 'color', 'km', 'fuel'],
                     where: vehicle ? {
                         [Op.or]: [
-                            { plate: { [Op.like]: `%${vehicle}%` } },
-                            { brand: { [Op.like]: `%${vehicle}%` } },
-                            { model: { [Op.like]: `%${vehicle}%` } }
+                            {plate: {[Op.like]: `%${vehicle}%`}},
+                            {brand: {[Op.like]: `%${vehicle}%`}},
+                            {model: {[Op.like]: `%${vehicle}%`}}
                         ]
                     } : null,
                     required: Boolean(vehicle)
@@ -291,41 +290,50 @@ api.get('/service_orders/search', async ({ query: { page = INITIAL_PAGE, limit =
 
         reply.status(200).send(response);
     } catch (error) {
-        reply.status(500).send({ error: error.message });
+        reply.status(500).send({error: error.message});
     }
 });
 
 
 api.post('/service_orders', async (request, reply) => {
-    if(!request.body.customer){
+    if (!request.body.customer) {
         throw new Error('Customer cannot be empty')
-    }else if(!request.body.vehicle){
+    } else if (!request.body.vehicle) {
         throw new Error('Vehicle cannot be empty')
     }
 
     await db.transaction(async t => {
-        try{
-            
+        try {
+
             const [customer] = await Customer.upsert(request.body.customer, {transaction: t})
             const [vehicle] = await Vehicle.upsert(request?.body?.vehicle, {transaction: t})
-            
+
             const {status, insuranceCompanyId, service_order_items, startAt, endAt, note} = request.body
 
-            const newSO = await ServiceOrder.upsert({id: request?.body?.id, status, customerId: customer.id, vehicleId: vehicle.id, insuranceCompanyId, startAt, endAt, note},{transaction: t})
+            const newSO = await ServiceOrder.upsert({
+                id: request?.body?.id,
+                status,
+                customerId: customer.id,
+                vehicleId: vehicle.id,
+                insuranceCompanyId,
+                startAt,
+                endAt,
+                note
+            }, {transaction: t})
             let createdItems = []
 
             if (service_order_items && service_order_items.length > 0) {
                 for (const item of service_order_items) {
                     const newItem = await ServiceOrderItem.upsert(
-                        { serviceOrderId: request?.body?.id, ...item },
-                        { transaction: t }
+                        {serviceOrderId: request?.body?.id, ...item},
+                        {transaction: t}
                     );
                     createdItems.push(newItem)
                 }
             }
 
             reply.status(200).send({...newSO.dataValues, service_order_items: createdItems, customer, vehicle, note})
-        }catch(error){
+        } catch (error) {
             console.log(error)
             await t.rollback()
             reply.status(500).send({error})
@@ -337,18 +345,18 @@ api.post('/service_orders', async (request, reply) => {
 
 createBasicCRUD('Service Order Item', 'service_order_items', ServiceOrderItem)
 createBasicCRUD('Vehicle', 'vehicles', Vehicle)
-api.get('/vehicles/search', async ({ query: { page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = '' } }, reply) => {
+api.get('/vehicles/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Vehicle.findAndCountAll({
             where: {
                 [Op.or]: [
-                    { plate: { [Op.like]: `%${searchValue}%` } },
-                    { brand: { [Op.like]: `%${searchValue}%` } },
-                    { model: { [Op.like]: `%${searchValue}%` } },
+                    {plate: {[Op.like]: `%${searchValue}%`}},
+                    {brand: {[Op.like]: `%${searchValue}%`}},
+                    {model: {[Op.like]: `%${searchValue}%`}},
                 ]
             },
-            limit: parseInt(limit, 10) || PAGE_LIMIT, 
-            order: [['updatedAt', 'DESC'], ['brand', 'ASC'],['model', 'ASC']],
+            limit: parseInt(limit, 10) || PAGE_LIMIT,
+            order: [['updatedAt', 'DESC'], ['brand', 'ASC'], ['model', 'ASC']],
             offset: getPaginationOffset(page, limit),
         });
 
@@ -357,24 +365,24 @@ api.get('/vehicles/search', async ({ query: { page = INITIAL_PAGE, limit = PAGE_
             meta: {
                 page: Number(page),
                 totalItems: count,
-                totalPages: Math.ceil(count/limit)
+                totalPages: Math.ceil(count / limit)
             }
         }
         reply.status(200).send(response);
     } catch (error) {
-        reply.status(500).send({ error: error.message });
+        reply.status(500).send({error: error.message});
     }
 });
 
 
 createBasicCRUD('Catalog', 'catalog', Catalog, ['get_by_id', 'post', 'put', 'delete'])
 api.get('/catalog/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
-    try{
+    try {
         const {count, rows} = await Catalog.findAndCountAll({
             limit,
             offset: getPaginationOffset(page, limit),
             order: [['description', 'ASC'], ['createdAt', 'DESC']],
-            where:{
+            where: {
                 [Op.or]: {
                     description: {[Op.like]: `%${searchValue}%`},
                     sku: {[Op.like]: `%${searchValue}%`}
@@ -386,11 +394,11 @@ api.get('/catalog/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIM
             meta: {
                 page: Number(page),
                 totalItems: count,
-                totalPages: Math.ceil(count/limit)
+                totalPages: Math.ceil(count / limit)
             }
         }
         reply.status(200).send(response);
-    }catch(error){
+    } catch (error) {
         reply.status(500).send({error})
     }
 })

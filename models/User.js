@@ -1,53 +1,47 @@
-import { DataTypes } from "sequelize";
+import {DataTypes} from "sequelize";
 import db from "../config/database.js";
 import {Tenant} from "./Tenant.js";
-import {User} from "./User.js";
+import {Role} from "./Role.js";
 
-export const InsuranceCompany = db.define('InsuranceCompany', {
+export const User = db.define('user', {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         allowNull: false,
         primaryKey: true,
     },
-    name: {
+    firstName: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
-    phone: {
-        type: DataTypes.STRING(15),
-        allowNull: false
-    },
-    email: {
+    lastName: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: true,
+    },
+    username: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false,
     },
     tenantId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references:{
+        references: {
             model: Tenant,
             key: 'id'
         }
     },
-    createdBy: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
-    },
-    updatedBy: {
+    roleId: {
         type: DataTypes.UUID,
         allowNull: true,
         references: {
-            model: User,
+            model: Role,
             key: 'id'
         }
     }
 }, {
-    tableName: 'insurance_companies'
+    tableName: 'users'
 })
-
-InsuranceCompany.belongsTo(Tenant)

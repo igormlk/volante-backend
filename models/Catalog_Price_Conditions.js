@@ -1,8 +1,16 @@
 import { DataTypes } from "sequelize";
 import db from "../config/database.js";
 import { Catalog } from "./Catalog.js";
+import {Tenant} from "./Tenant.js";
+import {User} from "./User.js";
 
 export const CatalogPriceCondition = db.define('CatalogPriceConditions', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        allowNull: false,
+        primaryKey: true,
+    },
     catalogItemId: {
         references:{
             model: Catalog,
@@ -32,7 +40,33 @@ export const CatalogPriceCondition = db.define('CatalogPriceConditions', {
     value:{
         type: DataTypes.DECIMAL,
         allowNull: false
+    },
+    tenantId: {
+        allowNull: false,
+        type: DataTypes.UUID,
+        references:{
+            model: Tenant,
+            key: 'id'
+        }
+    },
+    createdBy: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+            model: User,
+            key: 'id'
+        }
+    },
+    updatedBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+            model: User,
+            key: 'id'
+        }
     }
 },{
     tableName: 'catalog_price_conditions'
 })
+
+CatalogPriceCondition.belongsTo(Tenant)

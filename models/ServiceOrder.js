@@ -3,18 +3,22 @@ import db from "../config/database.js";
 import { Customer } from "./Customer.js";
 import { Vehicle } from "./Vehicle.js";
 import { InsuranceCompany } from "./InsuranceCompany.js"
+import {Tenant} from "./Tenant.js";
+import {User} from "./User.js";
 
 export const ServiceOrder = db.define("ServiceOrder", {
     id: {
-        type: DataTypes.STRING,
-        primaryKey: true
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        allowNull: false,
+        primaryKey: true,
     },
     status:{
         type: DataTypes.STRING,
         allowNull: false
     },
     customerId:{
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
         references:{
             model: Customer,
@@ -22,7 +26,7 @@ export const ServiceOrder = db.define("ServiceOrder", {
         }
     },
     vehicleId:{
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
         references:{
             model: Vehicle,
@@ -30,7 +34,7 @@ export const ServiceOrder = db.define("ServiceOrder", {
         }
     },
     insuranceCompanyId:{
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: true,
         references: {
             model: InsuranceCompany,
@@ -48,6 +52,30 @@ export const ServiceOrder = db.define("ServiceOrder", {
     note:{
         type: DataTypes.STRING,
         allowNull: true
+    },
+    tenantId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references:{
+            model: Tenant,
+            key: 'id'
+        }
+    },
+    createdBy: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+            model: User,
+            key: 'id'
+        }
+    },
+    updatedBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+            model: User,
+            key: 'id'
+        }
     }
 },{
     tableName: 'service_orders'

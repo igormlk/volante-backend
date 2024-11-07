@@ -4,7 +4,7 @@
 #
 
 app = 'volante-backend'
-primary_region = 'iad'
+primary_region = 'gru'
 
 [build]
 
@@ -20,3 +20,13 @@ primary_region = 'iad'
 
 [[vm]]
   size = 'shared-cpu-1x'
+
+[checks]
+  [checks.healthcheck]
+  grace_period = "30s"
+  interval = "15s"
+  method = "get"
+  path = "/"
+  port = 8080
+  timeout = "10s"
+  type = "http"

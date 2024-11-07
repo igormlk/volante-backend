@@ -7,14 +7,28 @@ import {InsuranceCompany} from "./models/InsuranceCompany.js";
 import {Catalog} from './models/Catalog.js';
 import {ServiceOrderItem} from './models/ServiceOrderItem.js';
 import {ServiceOrder} from "./models/ServiceOrder.js";
+import {RolePermission} from "./models/RolePermission.js";
 import {Op, ValidationError} from 'sequelize';
 import cors from '@fastify/cors'
 import {Supplier} from './models/Supplier.js';
+import fastifyJwt from 'fastify-jwt';
 
 const INITIAL_PAGE = 1;
 const PAGE_LIMIT = 50;
 
 const api = Fastify({logger: false})
+
+api.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET
+})
+
+api.decorate('authenticate', async (request, reply) => {
+    try {
+        await request.jwtVerify();
+    } catch (err) {
+        reply.send(err);
+    }
+});
 
 const startServer = async () => {
     try {
@@ -28,14 +42,13 @@ const startServer = async () => {
 };
 
 api.register(cors, {
-    origin: "https://volante-frontend.fly.dev",  // Permitir todas as origens. Pode ser modificado para um domínio específico.
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Métodos HTTP permitidos
     allowedHeaders: ['Content-Type', 'Authorization'], // Cabeçalhos permitidos
 });
 
 db.authenticate()
     .then(() => {
-        console.log('SQLite database connected');
+        console.log('Postgresql database connected');
         return db.sync();
     })
     .then(() => {
@@ -56,7 +69,7 @@ const getPaginationOffset = (page, limit) => page <= 1 ? 0 : ((page - 1) * limit
 const createBasicCRUD = (name, route, table, methods = ['get_all', 'get_by_id', 'post', 'put', 'delete']) => {
     // Criar
     if (methods.includes('post')) {
-        api.post(`/${route}`, async (request, reply) => {
+        api.post(`/${route}`,{ preValidation: [api.authenticate] }, async (request, reply) => {
             try {
                 const result = await table.create(request.body);
                 reply.status(201).send(result);
@@ -72,7 +85,7 @@ const createBasicCRUD = (name, route, table, methods = ['get_all', 'get_by_id', 
     // Listar
 
     if (methods.includes('get_all')) {
-        api.get(`/${route}`, async (request, reply) => {
+        api.get(`/${route}`, { preValidation: [api.authenticate] }, async (request, reply) => {
             try {
                 const result = await table.findAll();
                 reply.status(200).send(result);
@@ -84,7 +97,7 @@ const createBasicCRUD = (name, route, table, methods = ['get_all', 'get_by_id', 
 
     // Obter por ID
     if (methods.includes('get_by_id')) {
-        api.get(`/${route}/:id`, async (request, reply) => {
+        api.get(`/${route}/:id`, { preValidation: [api.authenticate] },async (request, reply) => {
             try {
                 const result = await table.findByPk(request.params.id);
                 if (result) {
@@ -100,7 +113,7 @@ const createBasicCRUD = (name, route, table, methods = ['get_all', 'get_by_id', 
 
     // Atualizar
     if (methods.includes('put')) {
-        api.put(`/${route}/:id`, async (request, reply) => {
+        api.put(`/${route}/:id`,{ preValidation: [api.authenticate] }, async (request, reply) => {
             try {
                 const [updated] = await table.update(request.body, {
                     where: {id: request.params.id}
@@ -123,7 +136,7 @@ const createBasicCRUD = (name, route, table, methods = ['get_all', 'get_by_id', 
 
     // Excluir
     if (methods.includes('delete')) {
-        api.delete(`/${route}/:id`, async (request, reply) => {
+        api.delete(`/${route}/:id`,{ preValidation: [api.authenticate] }, async (request, reply) => {
             try {
                 const deleted = await table.destroy({
                     where: {id: request.params.id}
@@ -142,7 +155,7 @@ const createBasicCRUD = (name, route, table, methods = ['get_all', 'get_by_id', 
 
 createBasicCRUD('Catalog Price Condition', 'catalog_price_conditions', Catalog)
 createBasicCRUD('Customer', 'customers', Customer)
-api.get('/customers/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/customers/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Customer.findAndCountAll({
             where: {
@@ -174,7 +187,7 @@ api.get('/customers/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_L
 });
 
 createBasicCRUD('Employee', 'employees', Employee)
-api.get('/employees/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/employees/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Employee.findAndCountAll({
             limit,
@@ -202,7 +215,7 @@ api.get('/employees/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_L
 })
 
 createBasicCRUD('Supplier', 'suppliers', Supplier)
-api.get('/suppliers/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/suppliers/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Supplier.findAndCountAll({
             limit,
@@ -232,7 +245,7 @@ api.get('/suppliers/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_L
 createBasicCRUD('Insurance Company', 'insurance_companies', InsuranceCompany)
 createBasicCRUD('Service Order', 'service_orders', ServiceOrder, ['put', 'delete', 'get_all'])
 
-api.get('/service_orders/search', async ({
+api.get('/service_orders/search', { preValidation: [api.authenticate] }, async ({
                                              query: {
                                                  page = INITIAL_PAGE,
                                                  limit = PAGE_LIMIT,
@@ -295,7 +308,7 @@ api.get('/service_orders/search', async ({
 });
 
 
-api.post('/service_orders', async (request, reply) => {
+api.post('/service_orders', { preValidation: [api.authenticate] }, async (request, reply) => {
     if (!request.body.customer) {
         throw new Error('Customer cannot be empty')
     } else if (!request.body.vehicle) {
@@ -345,7 +358,7 @@ api.post('/service_orders', async (request, reply) => {
 
 createBasicCRUD('Service Order Item', 'service_order_items', ServiceOrderItem)
 createBasicCRUD('Vehicle', 'vehicles', Vehicle)
-api.get('/vehicles/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/vehicles/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Vehicle.findAndCountAll({
             where: {
@@ -376,7 +389,7 @@ api.get('/vehicles/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LI
 
 
 createBasicCRUD('Catalog', 'catalog', Catalog, ['get_by_id', 'post', 'put', 'delete'])
-api.get('/catalog/search', async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/catalog/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Catalog.findAndCountAll({
             limit,

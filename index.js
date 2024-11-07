@@ -7,7 +7,6 @@ import {InsuranceCompany} from "./models/InsuranceCompany.js";
 import {Catalog} from './models/Catalog.js';
 import {ServiceOrderItem} from './models/ServiceOrderItem.js';
 import {ServiceOrder} from "./models/ServiceOrder.js";
-import {RolePermission} from "./models/RolePermission.js";
 import {Op, ValidationError} from 'sequelize';
 import cors from '@fastify/cors'
 import {Supplier} from './models/Supplier.js';
@@ -48,11 +47,6 @@ api.register(cors, {
 
 db.authenticate()
     .then(() => {
-        console.log('Postgresql database connected');
-        return db.sync();
-    })
-    .then(() => {
-        console.log('Models sincronized');
         startServer()
     })
     .catch(error => {

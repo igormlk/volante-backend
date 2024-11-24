@@ -81,7 +81,13 @@ const createBasicCRUD = (name, route, table, methods = ['get_all', 'get_by_id', 
     if (methods.includes('get_all')) {
         api.get(`/${route}`, { preValidation: [api.authenticate] }, async (request, reply) => {
             try {
-                const result = await table.findAll();
+                const result = await table.findAll(
+                    {
+                        where: {
+                            "tenantId": request.user.tenant
+                        }
+                    }
+                );
                 reply.status(200).send(result);
             } catch (error) {
                 reply.status(500).send({error: error.message});
@@ -149,7 +155,7 @@ const createBasicCRUD = (name, route, table, methods = ['get_all', 'get_by_id', 
 
 createBasicCRUD('Catalog Price Condition', 'catalog_price_conditions', Catalog)
 createBasicCRUD('Customer', 'customers', Customer)
-api.get('/customers/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/customers/search', { preValidation: [api.authenticate] }, async ({user, query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Customer.findAndCountAll({
             where: {
@@ -158,7 +164,8 @@ api.get('/customers/search', { preValidation: [api.authenticate] }, async ({quer
                     {cpf: {[Op.like]: `%${searchValue}%`}},
                     {phone: {[Op.like]: `%${searchValue}%`}},
                     {email: {[Op.like]: `%${searchValue}%`}},
-                ]
+                ],
+                tenantId: {[Op.eq]: user.tenant}
             },
             limit: parseInt(limit, 10) || PAGE_LIMIT,
             order: [['updatedAt', 'DESC'], ['name', 'ASC']],
@@ -181,7 +188,7 @@ api.get('/customers/search', { preValidation: [api.authenticate] }, async ({quer
 });
 
 createBasicCRUD('Employee', 'employees', Employee)
-api.get('/employees/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/employees/search', { preValidation: [api.authenticate] }, async ({user,query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Employee.findAndCountAll({
             limit,
@@ -191,7 +198,8 @@ api.get('/employees/search', { preValidation: [api.authenticate] }, async ({quer
                 [Op.or]: {
                     name: {[Op.like]: `%${searchValue}%`},
                     cpf: {[Op.like]: `%${searchValue}%`}
-                }
+                },
+                tenantId: {[Op.eq]: user.tenant}
             }
         })
         const response = {
@@ -209,7 +217,7 @@ api.get('/employees/search', { preValidation: [api.authenticate] }, async ({quer
 })
 
 createBasicCRUD('Supplier', 'suppliers', Supplier)
-api.get('/suppliers/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/suppliers/search', { preValidation: [api.authenticate] }, async ({user, query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Supplier.findAndCountAll({
             limit,
@@ -219,7 +227,8 @@ api.get('/suppliers/search', { preValidation: [api.authenticate] }, async ({quer
                 [Op.or]: {
                     name: {[Op.like]: `%${searchValue}%`},
                     cnpj: {[Op.like]: `%${searchValue}%`}
-                }
+                },
+                tenantId: {[Op.eq]: user.tenant}
             }
         })
         const response = {
@@ -240,6 +249,7 @@ createBasicCRUD('Insurance Company', 'insurance_companies', InsuranceCompany)
 createBasicCRUD('Service Order', 'service_orders', ServiceOrder, ['put', 'delete', 'get_all'])
 
 api.get('/service_orders/search', { preValidation: [api.authenticate] }, async ({
+                                             user,
                                              query: {
                                                  page = INITIAL_PAGE,
                                                  limit = PAGE_LIMIT,
@@ -262,7 +272,8 @@ api.get('/service_orders/search', { preValidation: [api.authenticate] }, async (
                             {cpf: {[Op.like]: `%${customer}%`}},
                             {phone: {[Op.like]: `%${customer}%`}},
                             {email: {[Op.like]: `%${customer}%`}},
-                        ]
+                        ],
+                        tenantId: {[Op.eq]: user.tenant}
                     } : null,
                     required: Boolean(customer)
                 },
@@ -274,13 +285,17 @@ api.get('/service_orders/search', { preValidation: [api.authenticate] }, async (
                             {plate: {[Op.like]: `%${vehicle}%`}},
                             {brand: {[Op.like]: `%${vehicle}%`}},
                             {model: {[Op.like]: `%${vehicle}%`}}
-                        ]
+                        ],
+                        tenantId: {[Op.eq]: user.tenant}
                     } : null,
                     required: Boolean(vehicle)
                 },
                 {
                     model: ServiceOrderItem,
-                    attributes: ['serviceOrderId', 'id', 'description', 'value', 'quantity', 'discount', 'total', 'type']
+                    attributes: ['serviceOrderId', 'id', 'description', 'value', 'quantity', 'discount', 'total', 'type'],
+                    where: {
+                        tenantId: {[Op.eq]: user.tenant}
+                    }
                 }
             ],
             // Remove o where global do ServiceOrder, aplicando busca apenas no Vehicle
@@ -352,7 +367,7 @@ api.post('/service_orders', { preValidation: [api.authenticate] }, async (reques
 
 createBasicCRUD('Service Order Item', 'service_order_items', ServiceOrderItem)
 createBasicCRUD('Vehicle', 'vehicles', Vehicle)
-api.get('/vehicles/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/vehicles/search', { preValidation: [api.authenticate] }, async ({user,query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Vehicle.findAndCountAll({
             where: {
@@ -360,7 +375,8 @@ api.get('/vehicles/search', { preValidation: [api.authenticate] }, async ({query
                     {plate: {[Op.like]: `%${searchValue}%`}},
                     {brand: {[Op.like]: `%${searchValue}%`}},
                     {model: {[Op.like]: `%${searchValue}%`}},
-                ]
+                ],
+                tenantId: {[Op.eq]: user.tenant}
             },
             limit: parseInt(limit, 10) || PAGE_LIMIT,
             order: [['updatedAt', 'DESC'], ['brand', 'ASC'], ['model', 'ASC']],
@@ -383,7 +399,7 @@ api.get('/vehicles/search', { preValidation: [api.authenticate] }, async ({query
 
 
 createBasicCRUD('Catalog', 'catalog', Catalog, ['get_by_id', 'post', 'put', 'delete'])
-api.get('/catalog/search', { preValidation: [api.authenticate] }, async ({query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
+api.get('/catalog/search', { preValidation: [api.authenticate] }, async ({user, query: {page = INITIAL_PAGE, limit = PAGE_LIMIT, searchValue = ''}}, reply) => {
     try {
         const {count, rows} = await Catalog.findAndCountAll({
             limit,
@@ -393,7 +409,8 @@ api.get('/catalog/search', { preValidation: [api.authenticate] }, async ({query:
                 [Op.or]: {
                     description: {[Op.like]: `%${searchValue}%`},
                     sku: {[Op.like]: `%${searchValue}%`}
-                }
+                },
+                tenantId: {[Op.eq]: user.tenant}
             }
         })
         const response = {

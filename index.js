@@ -300,7 +300,6 @@ api.get('/service_orders/search', {preValidation: [api.authenticate]}, async ({
                             {phone: {[Op.like]: `%${customer}%`}},
                             {email: {[Op.like]: `%${customer}%`}},
                         ],
-                        tenantId: {[Op.eq]: user.tenant}
                     } : null,
                     required: Boolean(customer)
                 },
@@ -313,18 +312,17 @@ api.get('/service_orders/search', {preValidation: [api.authenticate]}, async ({
                             {brand: {[Op.like]: `%${vehicle}%`}},
                             {model: {[Op.like]: `%${vehicle}%`}}
                         ],
-                        tenantId: {[Op.eq]: user.tenant}
                     } : null,
                     required: Boolean(vehicle)
                 },
                 {
                     model: ServiceOrderItem,
                     attributes: ['serviceOrderId', 'id', 'description', 'value', 'quantity', 'discount', 'total', 'type'],
-                    where: {
-                        tenantId: {[Op.eq]: user.tenant}
-                    }
                 }
             ],
+            where: {
+                tenantId: {[Op.eq]: user.tenant}
+            }
             // Remove o where global do ServiceOrder, aplicando busca apenas no Vehicle
         });
 

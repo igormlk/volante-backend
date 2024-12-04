@@ -281,7 +281,11 @@ api.get('/service_orders/search', {preValidation: [api.authenticate]}, async ({
                                                                                       page = INITIAL_PAGE,
                                                                                       limit = PAGE_LIMIT,
                                                                                       vehicle = '',
-                                                                                      customer = ''
+                                                                                      customer = '',
+                                                                                      startDate = Date.now(),
+                                                                                      endDate = Date.now(),
+                                                                                      overlap = false,
+                                                                                      id = null
                                                                                   }
                                                                               }, reply) => {
     try {
@@ -321,7 +325,19 @@ api.get('/service_orders/search', {preValidation: [api.authenticate]}, async ({
                 }
             ],
             where: {
-                tenantId: {[Op.eq]: user.tenant}
+                tenantId: {[Op.eq]: user.tenant},
+                [Op.or]: [
+                    {id: {[id ? Op.eq : Op.ne]: id}},
+                    {customerId: {[id ? Op.eq : Op.ne]: id}},
+                    {vehicleId: {[id ? Op.eq : Op.ne]: id}},
+                ],
+                [Op.and]: overlap ? [
+                    {startAt: {[Op.lte]: endDate}},
+                    {endAt: {[Op.gte]: startDate}}
+                ] : [
+                    {startAt: {[Op.gte]: startDate}},
+                    {endAt: {[Op.lte]: endDate}}
+                ]
             }
             // Remove o where global do ServiceOrder, aplicando busca apenas no Vehicle
         });
@@ -336,10 +352,12 @@ api.get('/service_orders/search', {preValidation: [api.authenticate]}, async ({
         };
 
         reply.status(200).send(response);
-    } catch (error) {
+    } catch
+        (error) {
         reply.status(500).send({error: error.message});
     }
-});
+})
+;
 
 
 api.post('/service_orders', {preValidation: [api.authenticate]}, async (request, reply) => {

@@ -282,8 +282,8 @@ api.get('/service_orders/search', {preValidation: [api.authenticate]}, async ({
                                                                                       limit = PAGE_LIMIT,
                                                                                       vehicle = '',
                                                                                       customer = '',
-                                                                                      startDate = Date.now(),
-                                                                                      endDate = Date.now(),
+                                                                                      startDate = null,
+                                                                                      endDate = null,
                                                                                       overlap = false,
                                                                                       id = null
                                                                                   }
@@ -332,11 +332,11 @@ api.get('/service_orders/search', {preValidation: [api.authenticate]}, async ({
                     {vehicleId: {[id ? Op.eq : Op.ne]: id}},
                 ],
                 [Op.and]: overlap ? [
-                    {startAt: {[Op.lte]: endDate}},
-                    {endAt: {[Op.gte]: startDate}}
+                    endDate ? {startAt: {[Op.lte]: endDate}} : {},
+                    startDate ? {endAt: {[Op.gte]: startDate}} : {}
                 ] : [
-                    {startAt: {[Op.gte]: startDate}},
-                    {endAt: {[Op.lte]: endDate}}
+                    startDate ? {startAt: {[Op.gte]: startDate}} : {},
+                    endDate ? {endAt: {[Op.lte]: endDate}} : {}
                 ]
             }
             // Remove o where global do ServiceOrder, aplicando busca apenas no Vehicle

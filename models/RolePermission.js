@@ -35,10 +35,19 @@ export const RolePermission = db.define('RolePermission', {
             key: 'id'
         }
     },
+    createdBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    },
+    updatedBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    }
 }, {
-    tableName: 'role_permissions'
+    tableName: 'role_permissions',
+    timestamps: true
 })
 
 // Definir o relacionamento N-N usando RolePermission
-Role.belongsToMany(Permission, { through: RolePermission });
-Permission.belongsToMany(Role, { through: RolePermission });
+Role.belongsToMany(Permission, {through: RolePermission});
+Permission.belongsToMany(Role, {through: RolePermission});

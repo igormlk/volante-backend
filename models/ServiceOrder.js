@@ -1,10 +1,9 @@
-import { DataTypes } from "sequelize";
+import {DataTypes} from "sequelize";
 import db from "../config/database.js";
-import { Customer } from "./Customer.js";
-import { Vehicle } from "./Vehicle.js";
-import { InsuranceCompany } from "./InsuranceCompany.js"
+import {Customer} from "./Customer.js";
+import {Vehicle} from "./Vehicle.js";
+import {InsuranceCompany} from "./InsuranceCompany.js"
 import {Tenant} from "./Tenant.js";
-import {User} from "./User.js";
 
 export const ServiceOrder = db.define("ServiceOrder", {
     id: {
@@ -13,27 +12,27 @@ export const ServiceOrder = db.define("ServiceOrder", {
         allowNull: false,
         primaryKey: true,
     },
-    status:{
+    status: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    customerId:{
+    customerId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references:{
+        references: {
             model: Customer,
             key: 'id'
         }
     },
-    vehicleId:{
+    vehicleId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references:{
+        references: {
             model: Vehicle,
             key: 'id'
         }
     },
-    insuranceCompanyId:{
+    insuranceCompanyId: {
         type: DataTypes.UUID,
         allowNull: true,
         references: {
@@ -41,44 +40,37 @@ export const ServiceOrder = db.define("ServiceOrder", {
             key: 'id'
         }
     },
-    startAt:{
+    startAt: {
         type: DataTypes.DATE,
         allowNull: true
     },
-    endAt:{
+    endAt: {
         type: DataTypes.DATE,
         allowNull: true
     },
-    note:{
+    note: {
         type: DataTypes.STRING,
         allowNull: true
     },
     tenantId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references:{
+        references: {
             model: Tenant,
             key: 'id'
         }
     },
     createdBy: {
         type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: true,
     },
     updatedBy: {
         type: DataTypes.UUID,
         allowNull: true,
-        references: {
-            model: User,
-            key: 'id'
-        }
     }
-},{
-    tableName: 'service_orders'
+}, {
+    tableName: 'service_orders',
+    timestamps: true
 })
 
 ServiceOrder.belongsTo(Customer)

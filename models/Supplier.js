@@ -1,7 +1,6 @@
-import { DataTypes } from "sequelize";
+import {DataTypes} from "sequelize";
 import db from "../config/database.js";
 import {Tenant} from "./Tenant.js";
-import {User} from "./User.js";
 
 export const Supplier = db.define('Supplier', {
     id: {
@@ -38,29 +37,22 @@ export const Supplier = db.define('Supplier', {
     tenantId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references:{
+        references: {
             model: Tenant,
             key: 'id'
         }
     },
     createdBy: {
         type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: true,
     },
     updatedBy: {
         type: DataTypes.UUID,
         allowNull: true,
-        references: {
-            model: User,
-            key: 'id'
-        }
     }
 }, {
-    tableName: 'suppliers'
+    tableName: 'suppliers',
+    timestamps: true
 });
 
 Supplier.belongsTo(Tenant);

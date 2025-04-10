@@ -1,7 +1,6 @@
-import { DataTypes } from "sequelize";
+import {DataTypes} from "sequelize";
 import db from "../config/database.js";
 import {Tenant} from "./Tenant.js";
-import {User} from "./User.js";
 
 export const Vehicle = db.define('vehicle', {
     id: {
@@ -45,7 +44,7 @@ export const Vehicle = db.define('vehicle', {
     tenantId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references:{
+        references: {
             model: Tenant,
             key: 'id',
 
@@ -53,22 +52,22 @@ export const Vehicle = db.define('vehicle', {
     },
     createdBy: {
         type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: true,
     },
     updatedBy: {
         type: DataTypes.UUID,
         allowNull: true,
-        references: {
-            model: User,
-            key: 'id'
-        }
     }
-},{
+}, {
     tableName: 'vehicles'
 })
 
-Vehicle.belongsTo(Tenant, { foreignKey: 'tenantId', allowNull: true })
+Vehicle.belongsTo(Tenant, {foreignKey: 'tenantId', allowNull: true})
+Vehicle.associate = (models) => {
+    Vehicle.belongsToMany(models.Customer, {
+        through: 'customer_vehicles',
+        foreignKey: 'vehicle_id',
+        otherKey: 'customer_id',
+        as: 'customers'
+    });
+};

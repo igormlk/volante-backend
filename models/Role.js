@@ -21,6 +21,14 @@ export const Role = db.define('role', {
             key: 'id'
         }
     },
+    createdBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    },
+    updatedBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    }
 }, {
     tableName: 'roles'
 })

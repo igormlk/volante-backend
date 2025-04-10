@@ -1,7 +1,6 @@
-import { DataTypes } from "sequelize";
+import {DataTypes} from "sequelize";
 import db from "../config/database.js";
 import {Tenant} from "./Tenant.js";
-import {User} from "./User.js";
 
 export const Employee = db.define('Employee', {
     id: {
@@ -14,7 +13,7 @@ export const Employee = db.define('Employee', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    cpf:{
+    cpf: {
         type: DataTypes.STRING(15),
         allowNull: true,
         unique: true
@@ -30,29 +29,22 @@ export const Employee = db.define('Employee', {
     tenantId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references:{
+        references: {
             model: Tenant,
             key: 'id'
         }
     },
     createdBy: {
         type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: true,
     },
     updatedBy: {
         type: DataTypes.UUID,
         allowNull: true,
-        references: {
-            model: User,
-            key: 'id'
-        }
     }
 }, {
-    tableName: 'employees'
+    tableName: 'employees',
+    timestamps: true
 })
 
 Employee.belongsTo(Tenant)

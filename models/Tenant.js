@@ -1,4 +1,4 @@
-import { DataTypes } from "sequelize";
+import {DataTypes} from "sequelize";
 import db from "../config/database.js";
 
 export const Tenant = db.define('tenant', {
@@ -13,6 +13,15 @@ export const Tenant = db.define('tenant', {
         allowNull: false,
         unique: true
     },
-},{
-    tableName: 'tenants'
+    createdBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    },
+    updatedBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    }
+}, {
+    tableName: 'tenants',
+    timestamps: true
 })

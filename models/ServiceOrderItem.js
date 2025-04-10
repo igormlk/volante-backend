@@ -1,9 +1,8 @@
-import { DataTypes } from "sequelize";
+import {DataTypes} from "sequelize";
 import db from "../config/database.js";
-import { ServiceOrder } from "./ServiceOrder.js";
-import { Catalog } from "./Catalog.js";
+import {ServiceOrder} from "./ServiceOrder.js";
+import {Catalog} from "./Catalog.js";
 import {Tenant} from "./Tenant.js";
-import {User} from "./User.js";
 
 export const ServiceOrderItem = db.define('service_order_items', {
     id: {
@@ -12,15 +11,15 @@ export const ServiceOrderItem = db.define('service_order_items', {
         allowNull: false,
         primaryKey: true,
     },
-    description:{
+    description: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    value:{
+    value: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },
-    quantity:{
+    quantity: {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 1
@@ -41,33 +40,26 @@ export const ServiceOrderItem = db.define('service_order_items', {
     tenantId: {
         type: DataTypes.UUID,
         allowNull: false,
-        references:{
+        references: {
             model: Tenant,
             key: 'id'
         }
     },
     createdBy: {
         type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: true,
     },
     updatedBy: {
         type: DataTypes.UUID,
         allowNull: true,
-        references: {
-            model: User,
-            key: 'id'
-        }
     }
 }, {
-    tableName: 'service_order_items'
+    tableName: 'service_order_items',
+    timestamps: true
 })
 
 ServiceOrderItem.belongsTo(Tenant);
-ServiceOrderItem.belongsTo(ServiceOrder, { foreignKey: 'serviceOrderId', allowNull: true });
-ServiceOrderItem.belongsTo(Catalog, { foreignKey: 'catalogItemId', allowNull: true });
-ServiceOrder.hasMany(ServiceOrderItem, { foreignKey: 'serviceOrderId' });
-Catalog.hasMany(ServiceOrderItem, { foreignKey: 'catalogItemId' });
+ServiceOrderItem.belongsTo(ServiceOrder, {foreignKey: 'serviceOrderId', allowNull: true});
+ServiceOrderItem.belongsTo(Catalog, {foreignKey: 'catalogItemId', allowNull: true});
+ServiceOrder.hasMany(ServiceOrderItem, {foreignKey: 'serviceOrderId'});
+Catalog.hasMany(ServiceOrderItem, {foreignKey: 'catalogItemId'});

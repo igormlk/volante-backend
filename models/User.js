@@ -41,7 +41,16 @@ export const User = db.define('user', {
             model: Role,
             key: 'id'
         }
+    },
+    createdBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    },
+    updatedBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
     }
 }, {
-    tableName: 'users'
+    tableName: 'users',
+    timestamps: true
 })

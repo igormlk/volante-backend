@@ -17,6 +17,15 @@ export const Permission = db.define('permission', {
             key: 'id'
         }
     },
+    createdBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    },
+    updatedBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    }
 }, {
-    tableName: 'permissions'
+    tableName: 'permissions',
+    timestamps: true
 })

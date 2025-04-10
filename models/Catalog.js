@@ -1,7 +1,6 @@
-import { DataTypes } from "sequelize";
+import {DataTypes} from "sequelize";
 import db from "../config/database.js";
 import {Tenant} from "./Tenant.js";
-import {User} from "./User.js";
 
 export const Catalog = db.define('catalog', {
     id: {
@@ -19,13 +18,13 @@ export const Catalog = db.define('catalog', {
         allowNull: true,
         unique: true
     },
-    value:{
-        type: DataTypes.DECIMAL(10,2),
+    value: {
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
-    type:{
+    type: {
         type: DataTypes.STRING,
-        allowNull:false
+        allowNull: false
     },
     hasConditionalPrice: {
         type: DataTypes.BOOLEAN,
@@ -35,29 +34,22 @@ export const Catalog = db.define('catalog', {
     tenantId: {
         allowNull: false,
         type: DataTypes.UUID,
-        references:{
+        references: {
             model: Tenant,
             key: 'id'
         }
     },
     createdBy: {
         type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: true,
     },
     updatedBy: {
         type: DataTypes.UUID,
         allowNull: true,
-        references: {
-            model: User,
-            key: 'id'
-        }
     }
-},{
-    tableName: 'catalog'
+}, {
+    tableName: 'catalog',
+    timestamps: true
 })
 
 Catalog.belongsTo(Tenant);
